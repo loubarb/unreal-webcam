@@ -34,6 +34,16 @@ function paintToCanvas() {
 
   return setInterval(() => {
     ctx.drawImage(video, 0, 0, width, height);
+
+    // gets data of pixels of image from webcam
+      // returns array inside pixels.data
+    let pixels = ctx.getImageData(0, 0, width, height);
+    // Effects 
+      // pixels = redEffect(pixels);
+      // pixels = rgbSplit(pixels);
+    ctx.globalAlpha = 0.1; // enables ghost-like filter
+    // puts pixels back after taking their data from webcam iamge
+    ctx.putImageData(pixels, 0, 0);
   }, 16);
 }
 
@@ -51,6 +61,25 @@ function takePhoto() {
   // creates snippit of pic taken at bottom
   link.innerHTML = `<img src="${data} alt="pic of me" />`;
   strip.insertBefore(link, strip.firstChild);
+}
+
+function redEffect(pixels) {
+  // loop over every pixel
+  for (let i = 0; i < pixels.data.length; i+=4) {
+    pixels.data[i] = pixels.data[i] + 100; // red
+    pixels.data[i + 1] = pixels.data[i + 1] - 50; // green
+    pixels.data[i + 2] = pixels.data[i + 2] * 0.5; // blue
+  }
+  return pixels;
+}
+
+function rgbSplit(pixels) {
+  for (let i = 0; i < pixels.data.length; i+=4) {
+    pixels.data[i - 150] = pixels.data[i]; // red
+    pixels.data[i + 100] = pixels.data[i + 1]; // green
+    pixels.data[i - 150] = pixels.data[i + 2]; // blue
+  }
+  return pixels;
 }
 
 getVideo();
