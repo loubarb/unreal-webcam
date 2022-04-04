@@ -15,7 +15,9 @@ function getVideo() {
       video.srcObject = mediaStream;
       video.play();
     })
-    .catch(err);
+    .catch(err => {
+      console.error(`Error`, err);
+    });
 }
 
 // get width & height of video
@@ -36,7 +38,10 @@ function paintToCanvas() {
     // Effects 
       // pixels = redEffect(pixels);
       // pixels = rgbSplit(pixels);
-    ctx.globalAlpha = 0.1; // enables ghost-like filter
+        // enables ghost-like filter
+      // ctx.globalAlpha = 0.1; 
+      pixels = greenScreen(pixels);
+
     // puts pixels back after taking their data from webcam iamge
     ctx.putImageData(pixels, 0, 0);
   }, 16);
@@ -54,7 +59,7 @@ function takePhoto() {
   // allows picture to be downloaded after its taken
   link.setAttribute('download', 'mypic');
   // creates snippit of pic taken at bottom
-  link.innerHTML = `<img src="${data} alt="pic of me" />`;
+  link.innerHTML = `<img src="${data}" alt="pic of me" />`;
   strip.insertBefore(link, strip.firstChild);
 }
 
@@ -75,6 +80,38 @@ function rgbSplit(pixels) {
     pixels.data[i - 150] = pixels.data[i + 2]; // blue
   }
   return pixels;
+}
+
+function greenScreen(pixels) {
+  // holds min/max green
+  const levels = {};
+
+  // select all rgb input sliders
+  document.querySelectorAll('.rgb input').forEach((input) => {
+    levels[input.name] = input.value;
+  });
+
+  // loop over every pixels
+  for (i = 0; i < pixels.data.length; i = i + 4) {
+    red = pixels.data[i];
+    green = pixels.data[i + 1];
+    blue = pixels.data[i + 2];
+    alpha = pixels.data[i + 3];
+
+    // if level is anywhere between mix/max of values found in loop, remove alpha
+    if (red >= levels.rmin
+      && green >= levels.gmin
+      && blue >= levels.bmin
+      && red <= levels.rmax
+      && green <= levels.gmax
+      && blue <= levels.bmax) {
+        // takes out alpha
+      pixels.data[i + 3] = 0;
+    }
+  }
+
+  return pixels;
+  
 }
 
 getVideo();
